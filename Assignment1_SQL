@@ -194,11 +194,10 @@ ORDER BY Name ASC;
 Write a query that retrieves the unique combination of columns ProductSubcategoryID and Color from the Production.Product table. We do not want any rows that are NULL.in any of
 the two columns in the result. (Hint: Use IsNull)
 
-SELECT  DISTINCT isNULL(ProductSubcategoryID, -1) AS ProductSubcategoryID,isNULL(color , 'N/A') AS color 
+SELECT  DISTINCT isNULL(ProductSubcategoryID, 0) AS ProductSubcategoryID,isNULL(color , 'N/A') AS color 
 FROM   Production.Product
-WHERE ProductSubcategoryID != -1 AND color != 'N/A';
 
---"We do not want any rows that are NULL.in any of the two columns in the result."
+
 
 
 
