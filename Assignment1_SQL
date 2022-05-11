@@ -7,7 +7,7 @@ CRUD stands for CREATE, READ, UPDATE and DELETE so the users can create the date
 What are the System Databases?
 Database is a collection of data. There are 5 System databases are Master, Model, Tempdb,Mssql,Msdb.
 1) The master databse is composed of system tables that keep track of the server installation as a whole and 
-   all other daabases that are subsequently created. The master databse is critical to the system as it keeps 
+   all other databases that are subsequently created. The master databse is critical to the system as it keeps 
    a current backup files.
 2) Model databse is a template database. New database will inherit from previous model template or with new 
    changes to objects or new template size you create.
