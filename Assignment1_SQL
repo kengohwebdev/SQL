@@ -196,6 +196,6 @@ Write a query that retrieves the unique combination of columns ProductSubcategor
 the two columns in the result. (Hint: Use IsNull)
 
 
-SELECT IsNull(ProductSubcategoryID , ''), color 
+SELECT IsNull(ProductSubcategoryID , '') AS ProductSubcategoryID, color 
 FROM   Production.Product
 WHERE color is not null; 
