@@ -1,0 +1,212 @@
+Conceptual Questions:
+
+
+Difference between WHERE and HAVING?
+
+The main difference is WHERE cannot filter by aggregate function but HAVING can. 
+WHERE can be used with SELECT, UPDATE, DELETE, but HAVING can only be used with SELECT.
+WHERE Clause is used to filter the records from the table based on the specific condition before the data is aggregrated or grouped.
+HAVING Clause of the SELECT statement is based on the specific condition on a query using GROUP BY or an aggregated value.
+The HAVING Clause is used after the GROUP BY clause. HAVING qualifies the aggregated data after the data has been grouped or aggregated.
+-SQL Execution Order:
+--From/Join -> Where -> Group By -> Having -> Select -> Distinct -> Order By
+
+
+Difference between RANK() and DenseRank()
+RANK() gives you the ranking within your ordered partition. Ties are assigned the same rank, with the next ranking(s) skipped. So, if you have 3 items at rank 2, the next rank listed would be ranked 5.
+DENSE_RANK() again gives you the ranking within your ordered partition, but the ranks are consecutive. No ranks are skipped if there are ranks with multiple items.
+
+What is correlated subquery?
+Correlated Subquery is subquery where inner query is dependant on the outer query. 
+Essentially, it is a query nested inside another query that uses values from the outer query.
+
+
+Criteria of Union and Union all?
+The criteria of using UNION and UNION ALL are that the number of columns.
+They have the same data type associated with the column number from both result set.
+They should also match in the order they are given.
+Traits example is it uses FIRST SELECT satement Alias.
+
+
+
+Difference between UNION and UNION ALL
+
+Union vs Union All: 
+1. Union removes duplicates, union all will not
+2. Union the records from the first column is sorted automatically
+3. Unions cannot be used in recursive CTE, while Union All can
+
+Difference between Union and JOIN
+
+Unions are used to combine different result sets vertically by adding rows from multiple result sets.
+A JOIN is used to combine the result set by columns from two or more than two Tables.
+
+
+
+Joins: (AdventureWorks)
+
+
+1. Write a query that lists the country and province names from person. CountryRegion and person. StateProvince tables. Join them and produce a result set similar to the
+following.
+
+
+
+
+    Country                        Province
+
+
+
+
+2. Write a query that lists the country and province names from person. CountryRegion and person. StateProvince tables and list the countries filter them by Germany and Canada.
+Join them and produce a result set similar to the following.
+
+
+
+
+    Country                        Province
+
+
+
+
+ Using Northwind Database: (Use aliases for all the Joins)
+
+
+
+
+3. List all Products that has been sold at least once in last 25 years.
+
+
+
+
+4. List top 5 locations (Zip Code) where the products sold most in last 25 years.
+
+
+
+
+5. List all city names and number of customers in that city.     
+
+
+
+
+6. List city names which have more than 2 customers, and number of customers in that city
+
+
+
+
+7. Display the names of all customers  along with the  count of products they bought
+
+
+
+
+8. Display the customer ids who bought more than 100 Products with count of products.
+
+
+
+
+9. List all of the possible ways that suppliers can ship their products. Display the results as below
+
+
+
+
+    Supplier Company Name                Shipping Company Name
+
+
+
+
+    ---------------------------------            ----------------------------------
+
+
+
+
+10. Display the products order each day. Show Order date and Product Name.
+
+
+
+
+11. Displays pairs of employees who have the same job title.
+
+
+
+
+12. Display all the Managers who have more than 2 employees reporting to them.
+
+
+
+
+13. Display the customers and suppliers by city. The results should have the following columns
+
+
+
+
+City
+
+
+Name
+
+
+Contact Name,
+
+
+Type (Customer or Supplier)
+
+
+
+
+
+All scenarios are based on Database NORTHWIND.
+
+
+14. List all cities that have both Employees and Customers.
+
+
+15. List all cities that have Customers but no Employee.
+
+
+a. 
+    
+ Use
+sub-query
+
+
+b. 
+    
+ Do
+not use sub-query
+
+
+16. List all products and their total order quantities throughout all orders.
+
+
+17. List all Customer Cities that have at least two customers.
+
+
+a. 
+    
+ Use
+union
+
+
+b. 
+    
+ Use
+sub-query and no union
+
+
+18. List all Customer Cities that have ordered at least two different kinds of products.
+
+ 
+
+
+19. List 5 most popular products, their average price, and the customer city that ordered most quantity of it.
+
+ 
+
+
+20. List one city, if exists, that is the city from where the employee sold most orders (not the product quantity) is, and also the city of most total quantity of products ordered
+from. (tip: join  sub-query)
+
+
+
+
+21. How do you remove the duplicates record of a table?
+
