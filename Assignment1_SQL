@@ -7,9 +7,9 @@ CRUD stands for CREATE, READ, UPDATE and DELETE so the users can create the date
 What are the System Databases?
 Database is a collection of data. There are 5 System databases are Master, Model, Tempdb,Mssql,Msdb.
 1) The master databse is composed of system tables that keep track of the server installation as a whole and 
-   all other databases that are subsequently created. The master databse is critical to the system as it keeps 
+   all other databases that are subsequently created. The master database is critical to the system as it keeps 
    a current backup files.
-2) Model databse is a template database. New database will inherit from previous model template or with new 
+2) Model database is a template database. New database will inherit from previous model template and with new 
    changes to objects or new template size you create.
 3) Tempdb is a place to store database objects that are temporary such as temporary tables.
 4) Mssql system restore is a hidden database. Precoded functions come from the system function such as system 
@@ -18,9 +18,9 @@ Database is a collection of data. There are 5 System databases are Master, Model
 
 
 What is OLAP and OLTP?
-OLTP stands for online transaction process, OLTP captures,stores, and processess data from transanction in real time. OLTP has file size around 1 tb and uses SQL server and reviews.
+OLTP stands for online transaction process. OLTP captures,stores, and processess data from transanction in real time. OLTP has file size around 1 tb and uses SQL server and reviews.
 OLAP stands for online analytical process. OLPA uses complex queries to analyze aggregated historical data from OLTP system. OLAP can handle up to 1000 tb and uses datalake/warehouse.
-Using relation database, OLAP can have many more OLTP and Extract Transform Load, ETL.
+Using relation database, OLAP can have many more OLTP and  ETL, Extract Transform Load.
 For example, the relation database can chop off the data into objects and store it as json format in OLAP or using new sequal to store into a format in OLTP. 
 
 
@@ -38,7 +38,7 @@ DELETE
 
 
 What does the “Like” keyword do?
-LIKE operatpr create a search expression and it works with wildcards to search for macthing characters. LIKE opertor is used in a WHERE clause to search for a specified pattern in a column.
+LIKE operator create a search expression and it works with wildcards to search for macthing characters. LIKE opertor is used in a WHERE clause to search for a specified pattern in a column.
 
 
 List the wildcards available for the Like Operator.
@@ -46,6 +46,8 @@ List the wildcards available for the Like Operator.
 1. The percent sign (%) represents zero, one, or multiple characters.
 2. The underscore sign(_) represents one, single character.
 3. The ^operator works like a not operator in the bracket.
+4. []	Represents any single character within the brackets.
+5. -	Represents any single character within the specified range
 For example :
 SELECT TOP (1) ContactName,PostalCode
 FROM Customers
@@ -126,12 +128,14 @@ NAME: Chainring Nut  --  COLOR: Silver
 NAME: Chainring  --  COLOR: Black
 
 
+
 Write
 a query to retrieve the to the columns ProductID and Name from the Production.Product table filtered by ProductID from 400 to 500 using between
 
 SELECT ProductID, Name
 FROM   Production.Product
 WHERE ProductID BETWEEN 400 AND 500;
+
 
 
 Write a query to retrieve the to the columns  ProductID, Name and color from the Production.Product table restricted to the colors black and blue
