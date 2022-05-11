@@ -183,7 +183,6 @@ Seat Post
 Write a query so you retrieve rows that have a Name that begins with the letters SPO, but is then not followed by the letter K. After this zero or more letters can exists. Order
 the result set by the Name column.
 
-
 SELECT Name, ListPrice
 FROM   Production.Product
 WHERE Name LIKE '[S,P,O][^K]%'
@@ -195,6 +194,8 @@ ORDER BY Name ASC;
 Write a query that retrieves the unique combination of columns ProductSubcategoryID and Color from the Production.Product table. We do not want any rows that are NULL.in any of
 the two columns in the result. (Hint: Use IsNull)
 
-SELECT DISTINCT ProductSubcategoryID , IsNull(color , 'N/A') 
+--return color if not null and display n/a to keep ProductSubcategoryID
+
+SELECT  DISTINCT ProductSubcategoryID, isNULL(color , 'N/A') AS color 
 FROM   Production.Product
-WHERE ProductSubcategoryID is not null;
+WHERE ProductSubcategoryID is not null
