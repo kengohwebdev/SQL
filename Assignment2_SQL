@@ -101,27 +101,49 @@ Go
 3. List all Products that has been sold at least once in last 25 years.
 
 
-SELECT q.ProductID, p.OrderDate
-FROM   Orders p INNER JOIN
-             [Order Details] q ON p.OrderID = q.OrderID
-WHERE p.OrderDate > '1997-05-11 12:00:00'
+--Assuming each OrderID is a succesful purchase with no return
+--Join 3 tables using keys from Products, [Order Details] and Orders tables.
 
+
+SELECT p.ProductName, o.OrderDate
+FROM Products p
+JOIN [Order Details] d
+	On p.ProductID = d. ProductID
+JOIN Orders o
+	On d.OrderID = o.OrderID
+	WHERE o.OrderDate > '1997-05-11 12:00:00'
+	
+	
+	
+	
 4. List top 5 locations (Zip Code) where the products sold most in last 25 years.
 
-SELECT Top 5 ShipPostalCode, COUNT(*) as NumOrders,
-	dense_rank() OVER (Order by COUNT(*) DESC ) "Dense Rank"
-From Orders
-Group by ShipPostalCode
-Order By NumOrders DESC
+--Use dense rank to remove ambiguous same ranking position. 
+--Assuming each OrderID is counted as 1 product sold.
+
+SELECT Top 5 o.ShipPostalCode, COUNT(o.OrderID) AS 'MostProductSold',
+	dense_rank() OVER (Order by COUNT(o.OrderID) DESC) "Dense Rank"
+FROM Products p
+JOIN [Order Details] d
+	On p.ProductID = d. ProductID
+JOIN Orders o
+	On d.OrderID = o.OrderID
+WHERE o.OrderDate > '1997-05-11 12:00:00'
+GROUP BY  o.ShipPostalCode
+ORDER BY 'MostProductSold' DESC
+
 
 
 5. List all city names and number of customers in that city.     
 
 
-SELECT ShipCity, COUNT(CustomerID) as NumOfCustomer
-FROM Orders
-WHERE ShipPostalCode ='83720'
-Group BY ShipCity
+SELECT o.ShipCity, COUNT(o.CustomerID) AS 'NumberOfCustomer'
+FROM Products p
+JOIN [Order Details] d
+	On p.ProductID = d. ProductID
+JOIN Orders o
+	On d.OrderID = o.OrderID
+GROUP BY o.ShipCity
 
 
 
@@ -129,29 +151,37 @@ Group BY ShipCity
 6. List city names which have more than 2 customers, and number of customers in that city
 
 
-SELECT o.ShipCity,  COUNT(o.CustomerID) AS NumOfCustomer
-FROM Orders o JOIN Customers c on c.CustomerID = o.CustomerID 
+SELECT o.ShipCity, COUNT(o.CustomerID) AS 'NumberOfCustomer'
+FROM Products p
+JOIN [Order Details] d
+	On p.ProductID = d. ProductID
+JOIN Orders o
+	On d.OrderID = o.OrderID
 GROUP BY o.ShipCity
-HAVING COUNT(o.CustomerID) >= 2 
-ORDER BY NumOfCustomer DESC
+HAVING COUNT(o.CustomerID) > 2
+ORDER BY 'NumberOfCustomer' DESC
+
 
 
 7. Display the names of all customers  along with the  count of products they bought
 
-Select customerID, Count(orderID) AS TotalBought
-from Orders
-Group By customerID
-Order By TotalBought DESC
+SELECT c.ContactName, COUNT(o.OrderID) as 'ProductBought'
+FROM Customers c
+JOIN Orders o
+	On c.CustomerID = o.CustomerID
+GROUP BY c.ContactName
 
 
 
 8. Display the customer ids who bought more than 100 Products with count of products.
 
-Select customerID,  count(orderID) AS TotalBought
-from Orders
-Group By customerID
-HAVING count(OrderID) > 100
-
+SELECT c.CustomerID, COUNT(o.OrderID) as 'ProductBought'
+FROM Customers c
+JOIN Orders o
+	On c.CustomerID = o.CustomerID
+GROUP BY c.CustomerID
+HAVING COUNT(o.OrderID) > 100
+ORDER BY 'ProductBought' DESC
 
 
 
@@ -173,31 +203,41 @@ SELECT Suppliers.CompanyName AS "Supplier Company Name", Shippers.CompanyName AS
 FROM   Suppliers CROSS JOIN Shippers
 
 
+
+
 10. Display the products order each day. Show Order date and Product Name.
 
 
-SELECT o.OrderDate, Products.ProductName
-FROM   Orders AS o CROSS JOIN Products
-
+SELECT d.ProductID, o.OrderDate, p.ProductName
+FROM Orders o
+JOIN [Order Details] d
+	On o.OrderID = d.OrderID
+JOIN Products p
+	On d.ProductID = p.ProductID
 
 
 
 
 11. Displays pairs of employees who have the same job title.
 
+--Remove duplicates using where condition
+
 SELECT 
-t1.EmployeeID ,t1.LastName ,t1.title ,t2.EmployeeID ,t2.LastName ,t2.title 
+t1.EmployeeID ,t1.FirstName,t1.LastName ,t1.title ,t2.EmployeeID ,t2.FirstName,t2.LastName ,t2.title 
 FROM Employees t1
-LEFT JOIN Employees t2 ON t2.title = t1.title 
+ LEFT JOIN Employees t2 ON t2.title = t1.title 
+ WHERE (t1.FirstName != t2.FirstName AND t1.LastName != t2.LastName)
+
 
 
 12. Display all the Managers who have more than 2 employees reporting to them.
 
-SELECT EmployeeID, title, ReportsTo
-FROM EMPLOYEES
-WHERE ReportsTo > 2 and title = 'Sales Manager'
 
-
+ SELECT FirstName, LastName
+ FROM Employees
+ WHERE Title = 'Sales Manager'
+ GROUP BY FirstName, LastName
+ HAVING COUNT(ReportsTo) > 2
 
 
 13. Display the customers and suppliers by city. The results should have the following columns
@@ -231,14 +271,14 @@ All scenarios are based on Database NORTHWIND.
 
 14. List all cities that have both Employees and Customers.
 
-Select City,  'Employees' [Type]
-From Employees 
-Union 
-Select City, 'Customers'[Type]
-From Customers
+--Check if both columns return same rows for City contain both datas.
 
-
-15. List all cities that have Customers but no Employee.
+SELECT e.City AS [EmpInCity],c.City AS [CustInCity]
+FROM Employees e
+JOIN Orders d
+	On e.EmployeeID = d. EmployeeID
+JOIN Customers c
+	On d.CustomerID = c.CustomerID
 
 
 a. 
