@@ -343,10 +343,10 @@ b.
  Use
 sub-query and no union
 
-SELECT City
-FROM Customers
+SELECT City 
+FROM Customers 
 GROUP BY City
-HAVING COUNT(*)>=2
+HAVING COUNT(*) >=2
 
 
 18. List all Customer Cities that have ordered at least two different kinds of products.
