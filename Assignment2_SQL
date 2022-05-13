@@ -106,13 +106,17 @@ Go
 -- Use GetDate() to display current date and cast the DateRange as -25 years from today.
 
 
-SELECT p.ProductID,p.ProductName, DATEADD(year, -25, GetDate()) AS DateRange
+
+Declare @today datetime
+Set @today = GetDate()
+
+SELECT p.ProductID,p.ProductName, DATEADD(year, -25, @today) AS DateRange
 FROM Products p
 	JOIN [Order Details] od
 		ON od.ProductID = p.ProductID
 			JOIN Orders o
 				On o.OrderID = od.OrderID
-WHERE od.OrderID IS NOT NULL
+WHERE od.OrderID is not null 
 
 	
 	
@@ -140,30 +144,29 @@ GROUP BY ShipPostalCode, ProductName
 
 5. List all city names and number of customers in that city.     
 
-SELECT o.ShipCity, COUNT(o.CustomerID) AS 'TotalCust'
+
+SELECT ShipCity, COUNT(CustomerID) AS 'TotalCust'
 FROM Products p
 JOIN [Order Details] d
 	On p.ProductID = d. ProductID
 JOIN Orders o
 	On d.OrderID = o.OrderID
-GROUP BY o.ShipCity
+GROUP BY ShipCity
 ORDER BY 'TotalCust' DESC
-
 
 
 
 6. List city names which have more than 2 customers, and number of customers in that city
 
-SELECT o.ShipCity, COUNT(o.CustomerID) AS 'TotalCust'
+SELECT ShipCity, COUNT(CustomerID) AS 'TotalCust'
 FROM Products p
 	JOIN [Order Details] d
 		On p.ProductID = d. ProductID
 			JOIN Orders o
 				On d.OrderID = o.OrderID
-GROUP BY o.ShipCity
-HAVING COUNT(o.CustomerID)>2
+GROUP BY ShipCity
+HAVING COUNT(CustomerID) > 2
 ORDER BY 'TotalCust' DESC
-
 
 
 
@@ -228,14 +231,19 @@ JOIN Products p
 
 11. Displays pairs of employees who have the same job title.
 
---Remove duplicates using where condition
+--Remove duplicates using '>' operator on WHERE condition 
+-- Note: Less than or More than sign removes duplicates
 
-SELECT 
-t1.EmployeeID ,t1.FirstName,t1.LastName ,t1.title ,t2.EmployeeID ,t2.FirstName,t2.LastName ,t2.title 
-FROM Employees t1
- LEFT JOIN Employees t2 ON t2.title = t1.title 
- WHERE (t1.FirstName != t2.FirstName AND t1.LastName != t2.LastName)
 
+ SELECT dt.[Employee 1], dt.[Employee 2]
+ FROM 
+ (
+	SELECT e1.FirstName + ' ' + e1.LastName [Employee 1], e2.FirstName + ' ' + e2.LastName [Employee 2] 
+	FROM Employees AS e1 
+		INNER JOIN Employees AS e2
+			ON e1.Title = e2.Title
+) dt
+WHERE dt.[Employee 1] > dt.[Employee 2]
 
 
 12. Display all the Managers who have more than 2 employees reporting to them.
@@ -401,6 +409,9 @@ ORDER BY SUM(Quantity) DESC
 20. List one city, if exists, that is the city from where the employee sold most orders (not the product quantity) is, and also the city of most total quantity of products ordered
 from. (tip: join  sub-query)
 
+--Inject WITH nested query to find the most product sold 
+--Perform Ranking to to find the [Quantity of Product per City]
+--Use TOP 1 to find the most popular city where the employee sold most order
 
 
 WITH TopOrderedProduct
@@ -412,26 +423,27 @@ AS
 			ON p.ProductID = od.ProductID
 	GROUP BY p.ProductID 
 	ORDER BY [SoldTotal] DESC
-),
-PopularCity 
-AS
-(
-	SELECT o.EmployeeID, o.ShipCity, Sum(od.Quantity) [PopCount]
-	FROM [Order Details] od
-		JOIN Orders o
-			ON o.OrderID = od.OrderID
-	WHERE od.ProductID IN (SELECT od.ProductID FROM TopOrderedProduct)
-	GROUP BY o.EmployeeID, o.ShipCity
-),
-RankingPop
-AS
-(
-	SELECT ShipCity, EmployeeID, PopCount, 
-	Rank() Over(Partition By EmployeeID ORDER BY PopCount DESC) [RANK]
-	FROM PopularCity
 )
-SELECT * FROM RankingPop
-WHERE Rank =1
+
+SELECT  dtxd.EmployeeID, dtxd.ShipCity, dtxd.[Quantity of Product Per City], dtxd.[Rank]
+FROM
+(
+	SELECT DISTINCT TOP 1 dt.EmployeeID, dt.ShipCity, dt.[Quantity of Product Per City],
+		RANK() Over(Partition By EmployeeID ORDER BY [Quantity of Product Per City] DESC) [RANK]
+	FROM
+	(
+		SELECT o.EmployeeID, o.ShipCity, Sum(od.Quantity) [Quantity of Product Per City]
+		FROM [Order Details] od
+			JOIN Orders o
+				ON o.OrderID = od.OrderID
+		WHERE od.ProductID IN (SELECT od.ProductID FROM TopOrderedProduct)
+		GROUP BY o.EmployeeID, o.ShipCity
+	) dt
+)dtxd
+WHERE dtxd.[RANK] = 1
+
+
+
 
 
 
@@ -439,7 +451,10 @@ WHERE Rank =1
 
 
 21. How do you remove the duplicates record of a table?
-SQL can remove duplicates record of a table using GORUP BY and HAVING clause.
-The count function can be used to verify the occurance of a row and where to DELETE.
-We can also use CTE to remove duplicate rows.
+
+1)DISTINCT removes duplicate values.
+2)SQL can remove duplicates record of a table using GORUP BY and HAVING clause.
+3)Using the > or < sign also removes the duplicate.
+4)The count function can be used to verify the occurance of a row and where to DELETE.
+5)We can also use CTE to remove duplicate rows.
 
