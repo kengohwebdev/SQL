@@ -363,12 +363,16 @@ HAVING COUNT(*) >=2
 
 18. List all Customer Cities that have ordered at least two different kinds of products.
 
-Select distinct c.City
-FROM Customers c
-JOIN Orders o
-	On c.CustomerID = o.CustomerID
-JOIN [Order Details] d
-	On o.OrderID = d.OrderID
+
+SELECT  o.ShipCity
+FROM Orders o 
+	JOIN [order details] od 
+		ON o.orderid = od.orderid
+	JOIN products p
+		ON p.ProductID = od.ProductID
+GROUP BY o.ShipCity
+HAVING count(*) >=2
+
 
 19. List 5 most popular products, their average price, and the customer city that ordered most quantity of it.
 
