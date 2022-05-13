@@ -360,10 +360,20 @@ JOIN [Order Details] d
 
 19. List 5 most popular products, their average price, and the customer city that ordered most quantity of it.
 
-SELECT TOP 5 p.count(orderID), p.AVG(UnitPrice*Quantity), q.ShipCity
-FROM   Orders p INNER JOIN
-             [Order Details] q ON p.OrderID = q.OrderID
-	     
+SELECT TOP 5 ProductID, AVG(UnitPrice) AS AvgPrice,
+(
+SELECT TOP 1 City FROM Customers c
+	JOIN Orders o
+		ON o.CustomerID = c.CustomerID
+	JOIN [Order Details] od2 
+		ON od2.OrderID = o.OrderID
+	WHERE od2.ProductID = od1.ProductID
+	GROUP BY City 
+	ORDER BY SUM(Quantity) DESC
+) AS City FROM [Order Details] od1
+GROUP BY ProductID
+ORDER BY SUM(Quantity) DESC
+
 	     
 
 
