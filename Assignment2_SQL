@@ -150,16 +150,16 @@ GROUP BY o.ShipCity
 
 6. List city names which have more than 2 customers, and number of customers in that city
 
+SELECT DISTINCT City
+FROM Orders o 
+	JOIN [Order Details] d
+		ON o.OrderID = d.OrderID
+	JOIN Customers c
+		ON c.CustomerID = o.CustomerID
+	Group BY City
+	HAVING COUNT(*) >=2
 
-SELECT o.ShipCity, COUNT(o.CustomerID) AS 'NumberOfCustomer'
-FROM Products p
-JOIN [Order Details] d
-	On p.ProductID = d. ProductID
-JOIN Orders o
-	On d.OrderID = o.OrderID
-GROUP BY o.ShipCity
-HAVING COUNT(o.CustomerID) > 2
-ORDER BY 'NumberOfCustomer' DESC
+
 
 
 
@@ -271,14 +271,10 @@ All scenarios are based on Database NORTHWIND.
 
 14. List all cities that have both Employees and Customers.
 
---Check if both columns return same rows for City contain both datas.
 
-SELECT e.City AS [EmpInCity],c.City AS [CustInCity]
-FROM Employees e
-JOIN Orders d
-	On e.EmployeeID = d. EmployeeID
-JOIN Customers c
-	On d.CustomerID = c.CustomerID
+15. List all cities that have Customers but no Employee.
+
+
 
 
 a. 
@@ -286,29 +282,39 @@ a.
  Use
 sub-query
 
-Select  c.City
-From Customers c 
-Where City NOT IN (
-SELECT DISTINCT City FROM Employees)
-
+SELECT City 
+FROM Customers
+WHERE City NOT IN
+(
+	SELECT City FROM Employees 
+)
+ORDER BY CITY
 
 b. 
     
  Do
 not use sub-query
 
-Select City,  'Employees' [Type]
-From Employees where city is null
-Union 
-Select City, 'Customers'[Type]
-From Customers
+
+SELECT DISTINCT e.City AS [EmpInCity],c.City AS [CustInCity]
+FROM Employees e
+JOIN Orders d
+	On e.EmployeeID = d. EmployeeID
+JOIN Customers c
+	On d.CustomerID = c.CustomerID
+ORDER BY e.City
+
 
 
 16. List all products and their total order quantities throughout all orders.
 
-SELECT DISTINCT Products.ProductName, Sum(Orders.OrderID) OVER(Partition By ProductName) AS 'Total'
-FROM   Products CROSS JOIN Orders
-
+SELECT p.ProductName,COUNT(o.OrderID) AS 'TotalOrder'
+FROM Products p
+JOIN [Order Details] d
+	On p.ProductID = d. ProductID
+JOIN Orders o
+	On d.OrderID = o.OrderID
+GROUP BY p.ProductName
 
 17. List all Customer Cities that have at least two customers.
 
@@ -318,32 +324,48 @@ a.
  Use
 union
 
-SELECT City
-FROM Customer where
-(SELECT CITY FROM CUSTOMER WHERE CustomerID >2)
+
+SELECT City 
+FROM Customers
+	EXCEPT
+		SELECT City 
+		FROM Customers
+		GROUP BY City
+		HAVING COUNT(*)=1
+	UNION
+		SELECT City FROM Customers
+		GROUP BY City
+		HAVING COUNT(*)=0
+
 
 b. 
     
  Use
 sub-query and no union
-SELECT CITY, Count(CustomerID) AS 'Number Of Customer'
+
+SELECT City
 FROM Customers
-Where 'Number Of Customer' > 2
-Group BY City
+GROUP BY City
+HAVING COUNT(*)>=2
 
 
 18. List all Customer Cities that have ordered at least two different kinds of products.
 
-SELECT DISTINCT Orders.ShipCity, [Order Details].ProductID, Products.ProductID AS Expr1, Orders.OrderID, [Order Details].OrderID AS Expr2
-FROM   Products INNER JOIN
-             [Order Details] ON Products.ProductID = [Order Details].ProductID INNER JOIN
-             Orders ON [Order Details].OrderID = Orders.OrderID
+Select distinct c.City
+FROM Customers c
+JOIN Orders o
+	On c.CustomerID = o.CustomerID
+JOIN [Order Details] d
+	On o.OrderID = d.OrderID
 
 19. List 5 most popular products, their average price, and the customer city that ordered most quantity of it.
 
 SELECT TOP 5 p.count(orderID), p.AVG(UnitPrice*Quantity), q.ShipCity
 FROM   Orders p INNER JOIN
              [Order Details] q ON p.OrderID = q.OrderID
+	     
+	     
+
 
 
 20. List one city, if exists, that is the city from where the employee sold most orders (not the product quantity) is, and also the city of most total quantity of products ordered
