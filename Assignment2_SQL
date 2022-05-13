@@ -100,65 +100,69 @@ Go
 
 3. List all Products that has been sold at least once in last 25 years.
 
-
+--Join 3 tables using keys from Products, [Order Details] and Orders Tables.
 --Assuming each OrderID is a succesful purchase with no return
---Join 3 tables using keys from Products, [Order Details] and Orders tables.
+--Check FROM [Order Details] Table WHERE OrderID IS NOT NULL for ProductID, meaning it holds a record that they have ordered at least once.
+-- Use GetDate() to display current date and cast the DateRange as -25 years from today.
 
 
-SELECT p.ProductName, o.OrderDate
+SELECT p.ProductID,p.ProductName, DATEADD(year, -25, GetDate()) AS DateRange
 FROM Products p
-JOIN [Order Details] d
-	On p.ProductID = d. ProductID
-JOIN Orders o
-	On d.OrderID = o.OrderID
-	WHERE o.OrderDate > '1997-05-11 12:00:00'
+	JOIN [Order Details] od
+		ON od.ProductID = p.ProductID
+			JOIN Orders o
+				On o.OrderID = od.OrderID
+WHERE od.OrderID IS NOT NULL
+
 	
 	
 	
 	
 4. List top 5 locations (Zip Code) where the products sold most in last 25 years.
 
---Use dense rank to remove ambiguous same ranking position. 
---Assuming each OrderID is counted as 1 product sold.
+--Use dense rank to show the same ranking position. 
 
-SELECT Top 5 o.ShipPostalCode, COUNT(o.OrderID) AS 'MostProductSold',
-	dense_rank() OVER (Order by COUNT(o.OrderID) DESC) "Dense Rank"
+
+SELECT Top 5 o.ShipPostalCode, SUM(Quantity) As [TotalQty],p.ProductName, DATEADD(year, -25, GetDate()) AS DateRange,
+			dense_rank() OVER (ORDER BY SUM(Quantity) DESC) "Dense Rank"
 FROM Products p
-JOIN [Order Details] d
-	On p.ProductID = d. ProductID
-JOIN Orders o
-	On d.OrderID = o.OrderID
-WHERE o.OrderDate > '1997-05-11 12:00:00'
-GROUP BY  o.ShipPostalCode
-ORDER BY 'MostProductSold' DESC
+	JOIN [Order Details] od
+		ON od.ProductID = p.ProductID
+			JOIN Orders o
+				On o.OrderID = od.OrderID
+WHERE od.OrderID is not null 
+GROUP BY ShipPostalCode, ProductName
+
+
+
 
 
 
 5. List all city names and number of customers in that city.     
 
-
-SELECT o.ShipCity, COUNT(o.CustomerID) AS 'NumberOfCustomer'
+SELECT o.ShipCity, COUNT(o.CustomerID) AS 'TotalCust'
 FROM Products p
 JOIN [Order Details] d
 	On p.ProductID = d. ProductID
 JOIN Orders o
 	On d.OrderID = o.OrderID
 GROUP BY o.ShipCity
+ORDER BY 'TotalCust' DESC
 
 
 
 
 6. List city names which have more than 2 customers, and number of customers in that city
 
-SELECT DISTINCT City
-FROM Orders o 
+SELECT o.ShipCity, COUNT(o.CustomerID) AS 'TotalCust'
+FROM Products p
 	JOIN [Order Details] d
-		ON o.OrderID = d.OrderID
-	JOIN Customers c
-		ON c.CustomerID = o.CustomerID
-	Group BY City
-	HAVING COUNT(*) >=2
-
+		On p.ProductID = d. ProductID
+			JOIN Orders o
+				On d.OrderID = o.OrderID
+GROUP BY o.ShipCity
+HAVING COUNT(o.CustomerID)>2
+ORDER BY 'TotalCust' DESC
 
 
 
@@ -435,6 +439,7 @@ WHERE Rank =1
 
 
 21. How do you remove the duplicates record of a table?
-SQL can remove duplicates record of a table using GORUP BY and HAVING clause. The count function can be used to verify the occurance of a row and where to DELETE.
+SQL can remove duplicates record of a table using GORUP BY and HAVING clause.
+The count function can be used to verify the occurance of a row and where to DELETE.
 We can also use CTE to remove duplicate rows.
 
