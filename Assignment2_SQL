@@ -199,9 +199,13 @@ ORDER BY 'ProductBought' DESC
     ---------------------------------            ----------------------------------
 
 
-SELECT Suppliers.CompanyName AS "Supplier Company Name", Shippers.CompanyName AS "Shipping Company Name"
-FROM   Suppliers CROSS JOIN Shippers
-
+--Suppliers -> Products -> [Order Details] -> Orders -> Shippers
+SELECT DISTINCT Suppliers.CompanyName AS [Supplier Company Name], Shippers.CompanyName AS [Shipping Company Name]
+FROM   Suppliers INNER JOIN
+             Products ON Suppliers.SupplierID = Products.SupplierID INNER JOIN
+             [Order Details] ON Products.ProductID = [Order Details].ProductID INNER JOIN
+             Orders ON [Order Details].OrderID = Orders.OrderID INNER JOIN
+             Shippers ON Orders.ShipVia = Shippers.ShipperID
 
 
 
@@ -244,7 +248,7 @@ FROM Employees t1
 
 Select City, CompanyName, ContactName, 'Customers' [Type]
 From Customers
-Union All
+Union 
 Select City, CompanyName, ContactName, 'Suppliers'[Type]
 From Suppliers
 
@@ -271,6 +275,13 @@ All scenarios are based on Database NORTHWIND.
 
 14. List all cities that have both Employees and Customers.
 
+SELECT City 
+FROM Customers
+WHERE City IN
+(
+	SELECT City FROM Employees 
+)
+ORDER BY CITY
 
 15. List all cities that have Customers but no Employee.
 
@@ -302,6 +313,7 @@ JOIN Orders d
 	On e.EmployeeID = d. EmployeeID
 JOIN Customers c
 	On d.CustomerID = c.CustomerID
+WHERE EmployeeID is null
 ORDER BY e.City
 
 
@@ -382,13 +394,43 @@ ORDER BY SUM(Quantity) DESC
 from. (tip: join  sub-query)
 
 
-SELECT Employees_1.EmployeeID, Employees.EmployeeID AS Expr1, Orders.OrderID
-FROM   Employees INNER JOIN
-             Employees AS Employees_1 ON Employees.ReportsTo = Employees_1.EmployeeID INNER JOIN
-             Orders ON Employees.EmployeeID = Orders.EmployeeID AND Employees_1.EmployeeID = Orders.EmployeeID
-	     
+
+WITH TopOrderedProduct
+AS
+(
+	SELECT TOP 1 p.ProductID, SUM(Quantity) [SoldTotal]
+	FROM Products p 
+		JOIN [Order Details] od
+			ON p.ProductID = od.ProductID
+	GROUP BY p.ProductID 
+	ORDER BY [SoldTotal] DESC
+),
+PopularCity 
+AS
+(
+	SELECT o.EmployeeID, o.ShipCity, Sum(od.Quantity) [PopCount]
+	FROM [Order Details] od
+		JOIN Orders o
+			ON o.OrderID = od.OrderID
+	WHERE od.ProductID IN (SELECT od.ProductID FROM TopOrderedProduct)
+	GROUP BY o.EmployeeID, o.ShipCity
+),
+RankingPop
+AS
+(
+	SELECT ShipCity, EmployeeID, PopCount, 
+	Rank() Over(Partition By EmployeeID ORDER BY PopCount DESC) [RANK]
+	FROM PopularCity
+)
+SELECT * FROM RankingPop
+WHERE Rank =1
+
+
+
+
 
 
 21. How do you remove the duplicates record of a table?
 SQL can remove duplicates record of a table using GORUP BY and HAVING clause. The count function can be used to verify the occurance of a row and where to DELETE.
+We can also use CTE to remove duplicate rows.
 
