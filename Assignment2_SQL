@@ -145,15 +145,14 @@ GROUP BY ShipPostalCode, ProductName
 5. List all city names and number of customers in that city.     
 
 
-SELECT ShipCity, COUNT(CustomerID) AS 'TotalCust'
-FROM Products p
-JOIN [Order Details] d
-	On p.ProductID = d. ProductID
-JOIN Orders o
-	On d.OrderID = o.OrderID
-GROUP BY ShipCity
-ORDER BY 'TotalCust' DESC
-
+SELECT City, COUNT(o.CustomerID) AS [Number of Customer]
+FROM [Order Details] od
+	JOIN Orders o
+		ON o.OrderID = od.OrderID
+			JOIN Customers c
+				ON o.CustomerID = c.CustomerID			
+GROUP BY City
+ORDER BY [Number of Customer] DESC
 
 
 6. List city names which have more than 2 customers, and number of customers in that city
@@ -172,23 +171,29 @@ ORDER BY 'TotalCust' DESC
 
 7. Display the names of all customers  along with the  count of products they bought
 
-SELECT c.ContactName, COUNT(o.OrderID) as 'ProductBought'
-FROM Customers c
-JOIN Orders o
-	On c.CustomerID = o.CustomerID
-GROUP BY c.ContactName
-
+	
+SELECT c.ContactName, Sum(od.Quantity) [Quantity of Product Per City]
+FROM [Order Details] od
+	JOIN Orders o
+		ON o.OrderID = od.OrderID
+			JOIN Customers c
+				ON o.CustomerID = c.CustomerID
+				
+	GROUP BY c.ContactName
+	ORDER BY [Quantity of Product Per City] DESC
 
 
 8. Display the customer ids who bought more than 100 Products with count of products.
 
-SELECT c.CustomerID, COUNT(o.OrderID) as 'ProductBought'
-FROM Customers c
-JOIN Orders o
-	On c.CustomerID = o.CustomerID
-GROUP BY c.CustomerID
-HAVING COUNT(o.OrderID) > 100
-ORDER BY 'ProductBought' DESC
+SELECT o.CustomerID, Sum(od.Quantity) [Quantity of Product Per City]
+FROM [Order Details] od
+	JOIN Orders o
+		ON o.OrderID = od.OrderID
+			JOIN Customers c
+				ON o.CustomerID = c.CustomerID	
+	GROUP BY o.CustomerID
+	HAVING Sum(od.Quantity) > 100
+	ORDER BY [Quantity of Product Per City] DESC
 
 
 
@@ -207,24 +212,33 @@ ORDER BY 'ProductBought' DESC
 
 
 --Suppliers -> Products -> [Order Details] -> Orders -> Shippers
-SELECT DISTINCT Suppliers.CompanyName AS [Supplier Company Name], Shippers.CompanyName AS [Shipping Company Name]
-FROM   Suppliers INNER JOIN
-             Products ON Suppliers.SupplierID = Products.SupplierID INNER JOIN
-             [Order Details] ON Products.ProductID = [Order Details].ProductID INNER JOIN
-             Orders ON [Order Details].OrderID = Orders.OrderID INNER JOIN
-             Shippers ON Orders.ShipVia = Shippers.ShipperID
+
+
+
+SELECT DISTINCT sup.CompanyName AS [Supplier Company Name], 
+		ship.CompanyName AS [Shipping Company Name]
+		
+FROM Suppliers sup
+	INNER JOIN Products p
+		ON sup.SupplierID = p.SupplierID 
+			INNER JOIN [Order Details] od
+				ON p.ProductID = od.ProductID 
+					INNER JOIN Orders o
+						ON od.OrderID = o.OrderID 
+							INNER JOIN Shippers ship
+								ON o.ShipVia = ship.ShipperID
 
 
 
 10. Display the products order each day. Show Order date and Product Name.
 
 
-SELECT d.ProductID, o.OrderDate, p.ProductName
+SELECT d.ProductID, OrderDate, ProductName
 FROM Orders o
-JOIN [Order Details] d
-	On o.OrderID = d.OrderID
-JOIN Products p
-	On d.ProductID = p.ProductID
+	JOIN [Order Details] d
+		On o.OrderID = d.OrderID
+			JOIN Products p
+				On d.ProductID = p.ProductID
 
 
 
@@ -258,9 +272,10 @@ WHERE dt.[Employee 1] > dt.[Employee 2]
 
 13. Display the customers and suppliers by city. The results should have the following columns
 
+
 Select City, CompanyName, ContactName, 'Customers' [Type]
 From Customers
-Union 
+	Union 
 Select City, CompanyName, ContactName, 'Suppliers'[Type]
 From Suppliers
 
@@ -319,15 +334,11 @@ b.
 not use sub-query
 
 
-SELECT DISTINCT e.City AS [EmpInCity],c.City AS [CustInCity]
-FROM Employees e
-JOIN Orders d
-	On e.EmployeeID = d. EmployeeID
-JOIN Customers c
-	On d.CustomerID = c.CustomerID
-WHERE EmployeeID is null
-ORDER BY e.City
-
+SELECT DISTINCT c.City 
+FROM   Customers c INNER JOIN
+             Orders o ON c.CustomerID = o.CustomerID INNER JOIN
+             Employees e ON o.EmployeeID = e.EmployeeID
+WHERE e.City != c.City 
 
 
 16. List all products and their total order quantities throughout all orders.
