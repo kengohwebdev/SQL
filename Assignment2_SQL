@@ -262,10 +262,22 @@ WHERE dt.[Employee 1] > dt.[Employee 2]
 
 12. Display all the Managers who have more than 2 employees reporting to them.
 
-SELECT EmployeeID, FirstName, ReportsTo, 
+
+WITH empHiearchyCTE
+AS
+(
+	SELECT EmployeeID, FirstName, ReportsTo, 
 			DENSE_RANK() Over(ORDER BY ReportsTo DESC) [level]
 	FROM Employees
-	WHERE reportsTo IS NULL
+	WHERE reportsTo IS NULL 
+
+)
+
+SELECT e.EmployeeID, e.FirstName
+FROM empHiearchyCTE cte 
+ 	INNER JOIN EMPLOYEES e
+	ON e.EmployeeID = cte.EmployeeID
+		
 
 
 
