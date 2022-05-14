@@ -1,42 +1,137 @@
+USE Northwind
+GO
 
---1.      Create a view named “view_product_order_[your_last_name]”, list all products and total ordered quantity for that product.
+
+--1.      Create a view named “view_product_order_[your_last_name]”, 
+--		  list all products and total ordered quantity for that product.
 
 --Q1
 
-Create View view_product_order_GOH AS
+Create View view_product_order_GOH 
+AS
 (
-Select  ProductName, SUM(Quantity) AS [TotalQty]
+Select od.ProductID, ProductName, SUM(Quantity) AS [TotalQty]
 FROM Products p
 	JOIN [Order Details] od
 		ON p.ProductID = od.ProductID
-GROUP BY  ProductName
+			JOIN [Orders] o
+				ON o.OrderID = od.OrderID
+GROUP BY  od.ProductID, ProductName
+
 )
 
+
 SELECT * FROM dbo.view_product_order_GOH
+ORDER BY [TotalQty] DESC
 
 
---2.      Create a stored procedure “sp_product_order_quantity_[your_last_name]” that accept product id as an input and total quantities of order as output parameter.
+
+--2.      Create a stored procedure “sp_product_order_quantity_[your_last_name]” 
+--		  that accept product id as an input and total quantities of order as output parameter.
 
 --Q2
 
 Create Proc sp_product_order_quantity_GOH
-@pid varchar(30)
+@pID INT
 As
 Begin
-	Select ProductName,SUM(Quantity) AS [TotalQty]
-FROM Products p
+	Select od.ProductID, ProductName, SUM(Quantity) AS [TotalQty]
+	FROM Products p
 	JOIN [Order Details] od
 		ON p.ProductID = od.ProductID
-		WHERE od.ProductID = @pid
-		GROUP BY  ProductName
-		
-		
+			JOIN [Orders] o
+				ON o.OrderID = od.OrderID
+	WHERE od.ProductID = @pID
+	GROUP BY  od.ProductID, ProductName	
 End
-Exec sp_product_order_quantity_GOH 22
 
---3.      Create a stored procedure “sp_product_order_city_[your_last_name]” that accept product name as an input and top 5 cities that ordered most that product combined with the total quantity of that product ordered from that city as output.
+Exec sp_product_order_quantity_GOH 60
 
---4.      Create 2 new tables “people_your_last_name” “city_your_last_name”. City table has two records: {Id:1, City: Seattle}, {Id:2, City: Green Bay}. People has three records: {id:1, Name: Aaron Rodgers, City: 2}, {id:2, Name: Russell Wilson, City:1}, {Id: 3, Name: Jody Nelson, City:2}. Remove city of Seattle. If there was anyone from Seattle, put them into a new city “Madison”. Create a view “Packers_your_name” lists all people from Green Bay. If any error occurred, no changes should be made to DB. (after test) Drop both tables and view.
+--3.      Create a stored procedure “sp_product_order_city_[your_last_name]” 
+--		  that accept product name as an input 
+--		  and top 5 cities that ordered most that product 
+--		  combined with the total quantity of that product ordered from that city as output.
+
+
+Create Proc sp_product_order_city_GOH
+@pName VARCHAR(30) 
+AS
+BEGIN
+	Select TOP 5 ShipCity AS City, ProductName, od.ProductID, SUM(Quantity) AS [Total Qty],
+	dense_rank() OVER (ORDER BY SUM(Quantity) DESC) "Dense Rank"
+	FROM Products p
+	JOIN [Order Details] od
+		ON p.ProductID = od.ProductID
+			JOIN [Orders] o
+				ON o.OrderID = od.OrderID
+	WHERE ProductName = @pName 
+	GROUP BY  ShipCity, ProductName, od.ProductID
+END
+
+
+Exec sp_product_order_city_GOH 'Camembert Pierrot'
+
+--4.      Create 2 new tables “people_your_last_name” “city_your_last_name”. 
+
+--		  People has three records: 
+--		  {id:1, Name: Aaron Rodgers, City: 2}, 
+--		  {id:2, Name: Russell Wilson, City:1}, 
+--		  {Id: 3, Name: Jody Nelson, City:2}. 
+
+CREATE TABLE #people_GOH 
+(
+id INT, 
+Name VARCHAR(30), 
+CityID INT
+)
+INSERT #people_GOH VALUES
+(1, 'Aaron Rodgers', 2),
+(2, 'Russell Wilson', 3),
+(3, 'Jody Nelson', 3)
+SELECT * 
+FROM #people_GOH
+GO
+
+--		  City table has two records: {Id:1, City: Seattle}, {Id:2, City: Green Bay}. 
+
+CREATE TABLE #city_GOH 
+(
+id INT,  
+CityName VARCHAR(30)
+)
+INSERT #city_GOH VALUES
+(1, 'Seattle'),
+(2, 'Green Bay')
+Select * 
+From #city_GOH
+GO
+
+--		  Remove city of Seattle. If there was anyone from Seattle, put them into a new city “Madison”. 
+
+Create Proc people_GOH
+As
+Begin
+	Select * From Employees
+	Select * from Products
+End
+
+Create Proc city_GOH
+As
+Begin
+	Select * From Employees
+	Select * from Products
+End
+
+Exec people_GOH
+Exec city_GOH
+
+Drop proc city_GOH
+Drop proc people_GOH
+
+
+--		  Create a view “Packers_your_name” lists all people from Green Bay. 
+--		  If any error occurred, no changes should be made to DB. 
+--		  (after test) Drop both tables and view.
 
 --5.       Create a stored procedure “sp_birthday_employees_[you_last_name]” that creates a new table “birthday_employees_your_last_name” and fill it with all employees that have a birthday on Feb. (Make a screen shot) drop the table. Employee table should not be affected.
 
