@@ -2,10 +2,9 @@ USE Northwind
 GO
 
 
---1.      Create a view named “view_product_order_[your_last_name]”, 
---		  list all products and total ordered quantity for that product.
+--Q1.Create a view named “view_product_order_[your_last_name]”, 
+--  list all products and total ordered quantity for that product.
 
---Q1
 
 Create View view_product_order_GOH 
 AS
@@ -20,16 +19,15 @@ GROUP BY  od.ProductID, ProductName
 
 )
 
-
 SELECT * FROM dbo.view_product_order_GOH
 ORDER BY [TotalQty] DESC
 
 
 
---2.      Create a stored procedure “sp_product_order_quantity_[your_last_name]” 
---		  that accept product id as an input and total quantities of order as output parameter.
 
---Q2
+--Q2. Create a stored procedure “sp_product_order_quantity_[your_last_name]” 
+--   that accept product id as an input and total quantities of order as output parameter.
+
 
 Create Proc sp_product_order_quantity_GOH
 @pID INT
@@ -47,10 +45,12 @@ End
 
 Exec sp_product_order_quantity_GOH 60
 
---3.      Create a stored procedure “sp_product_order_city_[your_last_name]” 
---		  that accept product name as an input 
---		  and top 5 cities that ordered most that product 
---		  combined with the total quantity of that product ordered from that city as output.
+
+
+
+--Q3.Create a stored procedure “sp_product_order_city_[your_last_name]” 
+--   that accept product name as an input and top 5 cities that ordered most 
+--   that product combined with the total quantity of that product ordered from that city as output.
 
 
 Create Proc sp_product_order_city_GOH
@@ -68,71 +68,103 @@ BEGIN
 	GROUP BY  ShipCity, ProductName, od.ProductID
 END
 
-
 Exec sp_product_order_city_GOH 'Camembert Pierrot'
 
---4.      Create 2 new tables “people_your_last_name” “city_your_last_name”. 
 
---		  People has three records: 
---		  {id:1, Name: Aaron Rodgers, City: 2}, 
---		  {id:2, Name: Russell Wilson, City:1}, 
---		  {Id: 3, Name: Jody Nelson, City:2}. 
 
-CREATE TABLE #people_GOH 
+
+--Q4.Create 2 new tables “people_your_last_name” “city_your_last_name”. 
+
+
+--People has three records: {id:1, Name: Aaron Rodgers, City: 2}, {id:2, Name: Russell Wilson, City:1}, {Id: 3, Name: Jody Nelson, City:2}. 
+CREATE TABLE people_GOH 
 (
-id INT, 
-Name VARCHAR(30), 
-CityID INT
+	peopleId INT, 
+	peopleName VARCHAR(30), 
+	CityID INT
 )
-INSERT #people_GOH VALUES
+INSERT people_GOH 
+VALUES
 (1, 'Aaron Rodgers', 2),
 (2, 'Russell Wilson', 3),
 (3, 'Jody Nelson', 3)
-SELECT * 
-FROM #people_GOH
+SELECT * FROM people_GOH
 GO
 
---		  City table has two records: {Id:1, City: Seattle}, {Id:2, City: Green Bay}. 
-
-CREATE TABLE #city_GOH 
+--City table has two records: {Id:1, City: Seattle}, {Id:2, City: Green Bay}. 
+CREATE TABLE city_GOH 
 (
-id INT,  
-CityName VARCHAR(30)
+	CityID INT,  
+	CityName VARCHAR(30)
 )
-INSERT #city_GOH VALUES
+INSERT city_GOH VALUES
 (1, 'Seattle'),
 (2, 'Green Bay')
-Select * 
-From #city_GOH
+Select * From city_GOH
 GO
 
---		  Remove city of Seattle. If there was anyone from Seattle, put them into a new city “Madison”. 
+--If any error occurred, no changes should be made to DB. 
+Declare @testing TABLE
+(
+	peopleId INT,
+	peopleName VARCHAR(30),
+	CityID INT,
+	CityName VARCHAR(30)
+)
 
-Create Proc people_GOH
-As
-Begin
-	Select * From Employees
-	Select * from Products
-End
+Insert @testing 
+SELECT p.peopleID, p.peopleName, p.CityID, c.CityName
+		FROM people_GOH p
+			 full join city_GOH c
+				ON c.CityID=p.CityID
 
-Create Proc city_GOH
-As
-Begin
-	Select * From Employees
-	Select * from Products
-End
+--Remove city of Seattle if peopleID is null
+Declare @ctName VARCHAR(30)
+Set @ctName = 'Seattle'
+DELETE FROM @testing WHERE CityName = @ctName AND peopleID IS NULL
 
-Exec people_GOH
-Exec city_GOH
+--If there was anyone from Seattle, put them into a new city “Madison”.
+UPDATE @testing
+SET CityName = 'Madison' WHERE CityName = @ctName
 
-Drop proc city_GOH
-Drop proc people_GOH
+Select * From @testing
+GO
+
+--Create a view “Packers_your_name” lists all people from Green Bay. 
+Create View Packers_Ken_Goh
+AS
+(
+	SELECT p.peopleID, p.peopleName, p.CityID, c.CityName
+		FROM city_GOH c
+			 full join people_GOH p
+				ON c.CityID=p.CityID
+   WHERE c.CityName = 'GREEN BAY'
+)
+
+SELECT * FROM dbo.Packers_Ken_Goh
+
+--(after test) Drop both tables and view.
+DROP VIEW IF exists
+dbo.Packers_Ken_Goh
+
+DROP TABLE IF exists
+city_GOH
+
+DROP TABLE IF exists
+people_GOH
 
 
---		  Create a view “Packers_your_name” lists all people from Green Bay. 
---		  If any error occurred, no changes should be made to DB. 
---		  (after test) Drop both tables and view.
+
+
 
 --5.       Create a stored procedure “sp_birthday_employees_[you_last_name]” that creates a new table “birthday_employees_your_last_name” and fill it with all employees that have a birthday on Feb. (Make a screen shot) drop the table. Employee table should not be affected.
 
+
+
+
+
 --6.      How do you make sure two tables have the same data?
+
+Users can compare two tables using UNION ALL.
+UNION allows users to compare data from two similar tables or data sets.
+It also handles the null values so it quickly checking what are the data missing or changed in either table.
