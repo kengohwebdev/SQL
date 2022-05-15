@@ -103,7 +103,13 @@ INSERT city_GOH VALUES
 Select * From city_GOH
 GO
 
+
+
+
+
 --If any error occurred, no changes should be made to DB. 
+--BEGIN (Note: Hover codes from begin to end for @testing table)
+
 Declare @testing TABLE
 (
 	peopleId INT,
@@ -120,15 +126,23 @@ SELECT p.peopleID, p.peopleName, p.CityID, c.CityName
 
 --Remove city of Seattle if peopleID is null
 Declare @ctName VARCHAR(30)
+--Try test with 'Green Bay' to show the update on CityID and CityName 
 Set @ctName = 'Seattle'
 DELETE FROM @testing WHERE CityName = @ctName AND peopleID IS NULL
 
 --If there was anyone from Seattle, put them into a new city “Madison”.
 UPDATE @testing
 SET CityName = 'Madison' WHERE CityName = @ctName
+UPDATE @testing
+SET CityID = 4 WHERE CityName = @ctName
 
 Select * From @testing
 GO
+
+--END 
+
+
+
 
 --Create a view “Packers_your_name” lists all people from Green Bay. 
 Create View Packers_Ken_Goh
