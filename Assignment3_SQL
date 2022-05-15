@@ -160,7 +160,31 @@ people_GOH
 --5.       Create a stored procedure “sp_birthday_employees_[you_last_name]” that creates a new table “birthday_employees_your_last_name” and fill it with all employees that have a birthday on Feb. (Make a screen shot) drop the table. Employee table should not be affected.
 
 
+CREATE PROCEDURE sp_birthday_employees_GOH
+AS
 
+DECLARE @birthday_employees_GOH TABLE
+(
+	EmployeeID INT,
+	BirthMonth VARCHAR(30)
+)
+
+Insert @birthday_employees_GOH 
+SELECT EmployeeID, BirthMonth
+FROM Employees
+WHERE BirthMonth ='February'
+
+SELECT *
+FROM @birthday_employees_GOH 
+
+EXEC sp_birthday_employees_GOH
+
+
+DROP PROCEDURE if exists
+dbo.sp_birthday_employees_GOH
+
+DROP TABLE if exists
+birthday_employees_GOH 
 
 
 --6.      How do you make sure two tables have the same data?
