@@ -73,10 +73,13 @@ Exec sp_product_order_city_GOH 'Camembert Pierrot'
 
 
 
+
+
 --Q4.Create 2 new tables “people_your_last_name” “city_your_last_name”. 
 
 
 --People has three records: {id:1, Name: Aaron Rodgers, City: 2}, {id:2, Name: Russell Wilson, City:1}, {Id: 3, Name: Jody Nelson, City:2}. 
+
 CREATE TABLE people_GOH 
 (
 	peopleId INT, 
@@ -91,7 +94,9 @@ VALUES
 SELECT * FROM people_GOH
 GO
 
+
 --City table has two records: {Id:1, City: Seattle}, {Id:2, City: Green Bay}. 
+
 CREATE TABLE city_GOH 
 (
 	CityID INT,  
@@ -105,10 +110,15 @@ GO
 
 
 
+ 
+----<BEGIN HERE @testing> (Note: Hover codes from --BEGIN to --END for testing table purpose)
 
+--Tested with 'Green Bay' to show the update on CityID and CityName 
 
---If any error occurred, no changes should be made to DB. 
---BEGIN (Note: Hover codes from begin to end for @testing table)
+Declare @ctName VARCHAR(30)
+Set @ctName = 'Seattle'
+
+--If any error occurred, no changes should be made to DB. Use table variable for @testing
 
 Declare @testing TABLE
 (
@@ -125,26 +135,52 @@ SELECT p.peopleID, p.peopleName, p.CityID, c.CityName
 				ON c.CityID=p.CityID
 
 --Remove city of Seattle if peopleID is null
-Declare @ctName VARCHAR(30)
---Try test with 'Green Bay' to show the update on CityID and CityName 
-Set @ctName = 'Seattle'
+
+
 DELETE FROM @testing WHERE CityName = @ctName AND peopleID IS NULL
 
---If there was anyone from Seattle, put them into a new city “Madison”.
-UPDATE @testing
-SET CityName = 'Madison' WHERE CityName = @ctName
+--If there was anyone from Seattle
+
+--Update the new city Code
+
 UPDATE @testing
 SET CityID = 4 WHERE CityName = @ctName
+
+--Put them into a new city “Madison”.
+
+UPDATE @testing
+SET CityName = 'Madison' WHERE CityName = @ctName
+
+--View temp table from testing to verify
 
 Select * From @testing
 GO
 
---END 
+----</END HERE @testing>
 
+
+
+--If any error occurred, no changes should be made to DB.
+--Since no error from table variable @testing, go ahead and commit.
+--Use stored procedure to remove multiple cities if necessary
+
+Create Proc sp_commit_movingCity_GOH
+@ctName VARCHAR(30) 
+AS 
+BEGIN
+	DELETE FROM city_GOH WHERE CityName = @ctName
+END
+
+EXEC sp_commit_movingCity_GOH 'Seattle'
+
+--View original table to confirm city removed
+SELECT * FROM 
+city_GOH
 
 
 
 --Create a view “Packers_your_name” lists all people from Green Bay. 
+
 Create View Packers_Ken_Goh
 AS
 (
@@ -152,12 +188,16 @@ AS
 		FROM city_GOH c
 			 full join people_GOH p
 				ON c.CityID=p.CityID
-   WHERE c.CityName = 'GREEN BAY'
+   	WHERE c.CityName = 'GREEN BAY'
 )
 
 SELECT * FROM dbo.Packers_Ken_Goh
 
+
+
+
 --(after test) Drop both tables and view.
+
 DROP VIEW IF exists
 dbo.Packers_Ken_Goh
 
@@ -166,6 +206,9 @@ city_GOH
 
 DROP TABLE IF exists
 people_GOH
+
+DROP PROCEDURE IF exists
+sp_commit_movingCity_GOH
 
 
 
