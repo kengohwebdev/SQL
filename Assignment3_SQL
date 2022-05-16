@@ -246,6 +246,11 @@ birthday_employees_GOH
 
 --6.      How do you make sure two tables have the same data?
 
-Users can compare two tables using UNION ALL.
-UNION allows users to compare data from two similar tables or data sets.
-It also handles the null values so it quickly checking what are the data missing or changed in either table.
+Users can use join to combine results into one or more tables either by comparing columns or row-by-row using union, join or subquery
+
+1)  UNION allows users to compare data from two similar tables or data sets.
+    UNION ALL also handles the null values so it quickly checking what are the data missing or changed in either table.
+
+2)  Inner JOIN only return a resulting row if the join condition matches in both tables.
+
+3)  Users can also use nested queries on WHERE the data values are equal.
